@@ -25,7 +25,7 @@ def train_w2v(mpid_list):
         w2v = Word2Vec()
         print('A new word2vec model has been loaded.')
 
-    print('{} pieces of news will be trained.'.format(len(mpid_list)))
+    print('Training the copus of {} pieces of news...'.format(len(mpid_list)))
 
     w2v.build_vocab(bodies)
     w2v.train(bodies, total_examples=w2v.corpus_count, epochs=w2v.iter)
