@@ -31,9 +31,10 @@ def train_w2v(mpid_list):
     w2v.train(bodies, total_examples=w2v.corpus_count, epochs=w2v.iter)
 
     w2v.save('./data/sohunews.wv')
+    return bodies, headlines
 
 
 if __name__ == '__main__':
-    mpid_list = get_recent_mpid_list(6)
+    mpid_list = get_recent_mpid_list(1)
     train_w2v(mpid_list)
 

@@ -19,8 +19,12 @@ def get_segment_words_from_api(mpid):
     html = requests.get(url).text
     infos = json.loads(html)
 
-    title_words = infos['data']['title']
-    content_words = infos['data']['content']
+    try:
+        title_words = infos['data']['title']
+        content_words = infos['data']['content']
+    except:
+        print(infos)
+        return
     title = ' '.join([_['word'] for _ in title_words if
                         _['posType'] != 'w' and _['posType'] != 'mq' and _['posType'] != 'x'])
     content = ' '.join([_['word'] for _ in content_words if

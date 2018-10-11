@@ -10,6 +10,7 @@ from gensim.models import Word2Vec
 from gensim.corpora.dictionary import Dictionary
 from fit_callbacks import PredictForEpoch
 from utils import *
+from train_w2v import *
 
 
 class HeadlineGenerator(object):
@@ -67,8 +68,16 @@ class HeadlineGenerator(object):
 
         return embedding_weights
 
-    def train(self, batch_size=32, file_path='train.txt'):
-        mpid_list = get_recent_mpid_list(6)
+    def train(self,  batch_size=32, file_path='train.txt'):
+        # mpid_list = get_recent_mpid_list(0.5)
+        mpid_list = [258791658, 258790598, 258792124, 258791864,
+                     258791993, 258792000, 258792185, 258792421,
+                     258792807, 258792016, 258792088, 258791895,
+                     258791927, 258792996, 258792250, 258792191,
+                     258792482, 258792564, 258792745, 258792685,
+                     258792696, 258793204, 258793099, 258792673,
+                     258792979, 258792984, 258793254, 258792879,
+                     258793424, 258792126, 258792062]
         bodies, headlines = get_corpus_from_mpid_list(mpid_list)
         bodies_idx = []
         headlines_idx = []
@@ -126,7 +135,9 @@ class HeadlineGenerator(object):
 
 
 if __name__ == '__main__':
-    hg = HeadlineGenerator(80)
+    # mpid_list = get_recent_mpid_list(0.5)
+    # train_w2v(mpid_list)
+    hg = HeadlineGenerator(100)
     hg.train()
 
 

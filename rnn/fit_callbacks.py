@@ -40,16 +40,16 @@ class PredictForEpoch(Callback):
         self.file_path = file_path
 
     def on_epoch_end(self, epoch, epoch_logs):
-        for x, y in zip(self.xs, self.ys):
-            with open(self.file_path, 'a+') as f:
-                f.write('Epoch {}: \n'.format(epoch))
-                f.write('-' * 50 + '\n')
+        with open(self.file_path, 'w') as f:
+            f.write('Epoch {}: \n'.format(epoch))
+            f.write('-' * 50 + '\n')
+            for x, y in zip(self.xs, self.ys):
                 y_pred = gen_sequence(self.model, x)
                 y_pred_words = idx_to_words(y_pred, self.idx_word_dict)
                 y_real_words = idx_to_words(y, self.idx_word_dict)
                 f.write('Actual: ' + repr(y_real_words) + '\n')
                 f.write('Predicted: ' + repr(y_pred_words) + '\n')
-                f.write('\n' * 2)
+                f.write('\n')
 
 
 
