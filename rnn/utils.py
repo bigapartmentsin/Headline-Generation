@@ -14,8 +14,8 @@ from lxml import etree
 from summarizer import Summarizer
 import jieba.analyse
 import jieba.posseg
-from pyltp import Segmentor
-from pyltp import Postagger
+# from pyltp import Segmentor
+# from pyltp import Postagger
 from pymongo import MongoClient, DESCENDING, ASCENDING
 
 
