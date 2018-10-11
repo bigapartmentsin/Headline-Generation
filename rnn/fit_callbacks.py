@@ -40,7 +40,7 @@ class PredictForEpoch(Callback):
         self.file_path = file_path
 
     def on_epoch_end(self, epoch, epoch_logs):
-        with open(self.file_path, 'w') as f:
+        with open(self.file_path, 'a+') as f:
             f.write('Epoch {}: \n'.format(epoch))
             f.write('-' * 50 + '\n')
             for x, y in zip(self.xs, self.ys):
