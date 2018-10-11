@@ -34,5 +34,6 @@ def train_w2v(mpid_list):
 
 
 if __name__ == '__main__':
+    mpid_list = get_recent_mpid_list()
     train_w2v(mpid_list)
 

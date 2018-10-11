@@ -55,15 +55,15 @@ def get_corpus_from_mpid_list(mpid_list):
     return bodies, headlines
 
 
-def build_recent_mpid_list():
+def get_recent_mpid_list(hours=24):
     mpid_list = []
 
     KEYIMAGE_MONGO_URL = 'mongodb://captain_prod_rw:98A419Z27K9PoS4@captain-prod01.db2.sohuno.com:10000,captain-prod02.db2.sohuno.com:10000/captain_prod?readPreference=secondaryPreferred'
     mpRecNewsLightPart = MongoClient(KEYIMAGE_MONGO_URL).get_database('captain_prod').get_collection(
         'mpRecNewsLightPart')
 
-    end = datetime.datetime.now() - datetime.timedelta(hours=6)
-    start = end - datetime.timedelta(hours=24)
+    end = datetime.datetime.now() - datetime.timedelta(hours=12)
+    start = end - datetime.timedelta(hours=hours)
 
     cursor = mpRecNewsLightPart.find({'postTime': {'$gt': start, '$lt': end}}).sort("createTime", ASCENDING)
     print('From {} to {}, {} pieces of news have been found.'.format(start, end, cursor.count()))
