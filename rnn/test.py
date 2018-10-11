@@ -13,6 +13,7 @@ from lxml import etree
 import gensim
 from gensim.corpora.dictionary import Dictionary
 from pyltp import Segmentor
+from fit_callbacks import PredictForEpoch
 from pyltp import SentenceSplitter
 
 
@@ -66,8 +67,14 @@ def get_segment_words_from_api(mpid):
     title = re.sub(p, ' ', title)
     content = content.split(' ')
     title = title.split(' ')
-    content.remove('')
-    title.remove('')
+    try:
+        content.remove('')
+    except:
+        pass
+    try:
+        title.remove('')
+    except:
+        pass
     return content, title
 
 
@@ -93,7 +100,6 @@ if __name__ == '__main__':
     w2v = gensim.models.Word2Vec.load('sohunews.wv')
     gensim_dict = Dictionary()
     gensim_dict.doc2bow(w2v.wv.vocab.keys(), allow_update=True)
-    print(gensim_dict)
 
     word_idx_dict = {word:(idx+1) for idx, word in gensim_dict.items()}
     idx_word_dict = {(idx+1):word for idx, word in gensim_dict.items()}
@@ -116,7 +122,6 @@ if __name__ == '__main__':
 
     # ------------------------------------------------------------------------
     # construct data
-    bodies =
     bodies_idx = []
     headlines_idx = []
     for body, headline in zip(bodies, headlines):
@@ -135,7 +140,7 @@ if __name__ == '__main__':
 
     # ------------------------------------------------------------------------
     # reformat the inputs and outputs
-    maxlen = 100
+    maxlen = 79
     step = 1
 
     vocab_size = len(embedding_weights)
@@ -159,11 +164,12 @@ if __name__ == '__main__':
     ys = keras.utils.np_utils.to_categorical(ys, num_classes=vocab_size)
     xs = np.array(xs, dtype='int32')
 
+    maxlen += 1
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
     # build the model
-    input = keras.layers.Input(shape=(input_length,), dtype='int32')
+    input = keras.layers.Input(shape=(maxlen,), dtype='int32')
     embedding = keras.layers.Embedding(input_dim=vocab_size, output_dim=vec_dim,
                                        weights=[embedding_weights])(input)
     h = keras.layers.recurrent.GRU(units=1024, return_sequences=True, dropout=0.5)(embedding)
@@ -171,15 +177,32 @@ if __name__ == '__main__':
     h = keras.layers.Dense(vocab_size, activation='softmax')(h)
 
     model = keras.Model(input, h)
-    model.compile(loss='cateforical_crossentropy', optimizer='adagrad')
+    model.compile(loss='categorical_crossentropy', optimizer='adagrad')
 
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
     # train the model
     callbacks = []
+    file_path = 'train.txt'
+
+    x_test = np.zeros((0, xs.shape[1]))
+    y_test = []
+
+    idx = 0
+    for headline in headlines_idx[:20]:
+        len_headline = len(headline)
+        x = xs[idx:(idx+1)]
+        y = np.argmax(ys[idx:(idx+len_headline)], axis=1)
+        x_test = np.concatenate([x_test, x])
+        y_test.append(y)
+        idx += len_headline
+
+    predict_per_epoch = PredictForEpoch(x_test, y_test, idx_word_dict, file_path)
+    callbacks.append(predict_per_epoch)
+
     batch_size = 32
-    model.fit(xs, ys, nb_epoch=10, callbacks=callbacks, validation_split=0.0,
+    model.fit(xs, ys, epochs=10, callbacks=callbacks, validation_split=0.0,
               batch_size=batch_size, shuffle=False)
 
     # ------------------------------------------------------------------------

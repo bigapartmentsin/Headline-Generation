@@ -7,6 +7,10 @@ import requests
 import json
 import re
 import numpy as np
+import os, time, random
+import requests
+import datetime
+from pymongo import MongoClient, DESCENDING, ASCENDING
 
 
 def get_segment_words_from_api(mpid):
@@ -37,3 +41,34 @@ def get_segment_words_from_api(mpid):
     except:
         pass
     return content, title
+
+
+def get_corpus_from_mpid_list(mpid_list):
+    bodies = []
+    headlines = []
+
+    for mpid in mpid_list:
+        body, headline = get_segment_words_from_api(mpid)
+        bodies.append(body)
+        headlines.append(headline)
+
+    return bodies, headlines
+
+
+def build_recent_mpid_list():
+    mpid_list = []
+
+    KEYIMAGE_MONGO_URL = 'mongodb://captain_prod_rw:98A419Z27K9PoS4@captain-prod01.db2.sohuno.com:10000,captain-prod02.db2.sohuno.com:10000/captain_prod?readPreference=secondaryPreferred'
+    mpRecNewsLightPart = MongoClient(KEYIMAGE_MONGO_URL).get_database('captain_prod').get_collection(
+        'mpRecNewsLightPart')
+
+    end = datetime.datetime.now() - datetime.timedelta(hours=6)
+    start = end - datetime.timedelta(hours=24)
+
+    cursor = mpRecNewsLightPart.find({'postTime': {'$gt': start, '$lt': end}}).sort("createTime", ASCENDING)
+    print('From {} to {}, {} pieces of news have been found.'.format(start, end, cursor.count()))
+    for i in range(cursor.count()):
+        mpid_list.append(cursor.next()['mpId'])
+
+    return mpid_list
+

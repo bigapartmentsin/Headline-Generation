@@ -9,22 +9,24 @@ import numpy as np
 from gensim.models import Word2Vec
 from gensim.corpora.dictionary import Dictionary
 from fit_callbacks import PredictForEpoch
+from utils import *
 
 
 class HeadlineGenerator(object):
 
     def __init__(self, maxlen, step=1):
 
-        if not os.path.exists('./data/sohunews.wv'):
+        if not os.path.isfile('./data/sohunews.wv'):
             raise Exception('word2vec model does not exist!')
 
-        self.w2v = Word2Vec.load('./data/sohunews.mv')
+        self.w2v = Word2Vec.load('./data/sohunews.wv')
         self.word_idx_dict, self.idx_word_dict, self.word_vec_dict = self._build_dict()
+        self.vec_dim = next(len(value) for value in self.word_vec_dict.values())
         self.embedding_weights = self._build_embedding_weights()
 
         self.maxlen = maxlen
         self.step = step
-        self.vec_dim = self.embedding_weights.shape[1]
+        self.vocab_size = self.embedding_weights.shape[0]
 
         self.model = self._build_model()
         self.model.compile(loss='categorical_crossentropy', optimizer='adagrad')
@@ -33,7 +35,7 @@ class HeadlineGenerator(object):
         # build the model
         vocab_size = len(self.embedding_weights)
         input = keras.layers.Input(shape=(self.maxlen,), dtype='int32')
-        embedding = keras.layers.Embedding(input_dim=vocab_size, output_dim=vec_dim,
+        embedding = keras.layers.Embedding(input_dim=vocab_size, output_dim=self.vec_dim,
                                            weights=[self.embedding_weights])(input)
         h = keras.layers.recurrent.GRU(units=1024, return_sequences=True, dropout=0.5)(embedding)
         h = keras.layers.recurrent.GRU(units=1024, return_sequences=False, dropout=0.5)(h)
@@ -51,7 +53,7 @@ class HeadlineGenerator(object):
         word_idx_dict['\n'] = 0
         idx_word_dict[0] = '\n'
 
-        word_vec_dict = {word: w2v.wv[word] for idx, word in gensim_dict.items()}
+        word_vec_dict = {word: self.w2v.wv[word] for idx, word in gensim_dict.items()}
         vec_dim = next(len(value) for value in word_vec_dict.values())
         word_vec_dict['\n'] = np.zeros(vec_dim)
 
@@ -59,13 +61,15 @@ class HeadlineGenerator(object):
 
     def _build_embedding_weights(self):
         n_words = len(self.word_vec_dict)
-        embedding_weights = np.zeros((n_words, vec_dim))
+        embedding_weights = np.zeros((n_words, self.vec_dim))
         for word, idx in self.word_idx_dict.items():
             embedding_weights[idx, :] = self.word_vec_dict[word]
 
         return embedding_weights
 
     def train(self, batch_size=32, file_path='train.txt'):
+        mpid_list = [250194214, 256862684, 256891944, 256890421, 258150669]
+        bodies, headlines = get_corpus_from_mpid_list(mpid_list)
         bodies_idx = []
         headlines_idx = []
         for body, headline in zip(bodies, headlines):
@@ -121,6 +125,9 @@ class HeadlineGenerator(object):
                   batch_size=batch_size, shuffle=False)
 
 
+if __name__ == '__main__':
+    hg = HeadlineGenerator(80)
+    hg.train()
 
 
 

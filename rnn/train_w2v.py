@@ -12,29 +12,27 @@ from gensim.models import Word2Vec
 from utils import *
 
 
-def train_w2v():
+def train_w2v(mpid_list):
     if not os.path.exists('./data/'):
         os.mkdir('./data/')
 
-    bodies = []
-    headlines = []
+    bodies, headlines = get_corpus_from_mpid_list(mpid_list)
 
-    for mpid in mpid_list:
-        body, headline = get_segment_words_from_api(mpid)
-        bodies.append(body)
-        headlines.append(headline)
-
-    if os.path.exists('./data/sohunews.mv'):
-        w2v = Word2Vec.load('./data/sohunews.mv')
+    if os.path.exists('./data/sohunews.wv'):
+        w2v = Word2Vec.load('./data/sohunews.wv')
+        print('The existed word2vec model has been loaded.')
     else:
         w2v = Word2Vec()
+        print('A new word2vec model has been loaded.')
+
+    print('{} pieces of news will be trained.'.format(len(mpid_list)))
 
     w2v.build_vocab(bodies)
     w2v.train(bodies, total_examples=w2v.corpus_count, epochs=w2v.iter)
 
-    w2v.save('./data/sohunews.mv')
+    w2v.save('./data/sohunews.wv')
 
 
 if __name__ == '__main__':
-    train_w2v()
+    train_w2v(mpid_list)
 
