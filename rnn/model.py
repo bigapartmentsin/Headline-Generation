@@ -68,7 +68,7 @@ class HeadlineGenerator(object):
         return embedding_weights
 
     def train(self, batch_size=32, file_path='train.txt'):
-        mpid_list = [250194214, 256862684, 256891944, 256890421, 258150669]
+        mpid_list = get_recent_mpid_list(6)
         bodies, headlines = get_corpus_from_mpid_list(mpid_list)
         bodies_idx = []
         headlines_idx = []
