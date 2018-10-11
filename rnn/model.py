@@ -78,7 +78,8 @@ class HeadlineGenerator(object):
                      258792696, 258793204, 258793099, 258792673,
                      258792979, 258792984, 258793254, 258792879,
                      258793424, 258792126, 258792062]
-        bodies, headlines = get_corpus_from_mpid_list(mpid_list)
+        # bodies, headlines = get_corpus_from_mpid_list(mpid_list)
+        bodies, headlines = get_keywords_from_mpid_list(mpid_list)
         bodies_idx = []
         headlines_idx = []
         for body, headline in zip(bodies, headlines):
@@ -98,10 +99,9 @@ class HeadlineGenerator(object):
 
         for body, headline in zip(bodies_idx, headlines_idx):
             len_body, len_headline = len(body), len(headline)
-            max_headline_len = (len_body - (self.maxlen-1)) // self.step
             headline.append(0)
 
-            if len_headline <= max_headline_len:
+            if len_headline <= self.maxlen and len_body <= self.maxlen:
                 for idx, word in enumerate(headline):
                     x = body[idx:(self.maxlen-1)] + [0] + headline[:idx]
                     y = headline[idx]
@@ -110,7 +110,10 @@ class HeadlineGenerator(object):
                     ys.append(y)
 
         ys = keras.utils.np_utils.to_categorical(ys, num_classes=self.vocab_size)
-        xs = np.array(xs, dtype='int32')
+        X = np.zeros((len(ys), self.maxlen))
+        for i, x in enumerate(xs):
+            X[i] = np.lib.pad(x, [0, self.maxlen - len(x)], 'constant', constant_values=(0, 0))
+        xs = X
 
         # train the model
         callbacks = []
@@ -137,7 +140,7 @@ class HeadlineGenerator(object):
 if __name__ == '__main__':
     # mpid_list = get_recent_mpid_list(0.5)
     # train_w2v(mpid_list)
-    hg = HeadlineGenerator(100)
+    hg = HeadlineGenerator(20)
     hg.train()
 
 
