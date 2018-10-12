@@ -89,14 +89,14 @@ def get_segment_words_from_api(mpid):
     if infos['status'] == 0:
         print(mpid)
         print(infos)
-        return
+        return None, None
 
     try:
         title_words = infos['data']['title']
         content_words = infos['data']['content']
     except:
         print(infos)
-        return
+        return None, None
     title = ' '.join([_['word'] for _ in title_words if
                         _['posType'] != 'w' and _['posType'] != 'mq' and _['posType'] != 'x'])
     content = ' '.join([_['word'] for _ in content_words if
