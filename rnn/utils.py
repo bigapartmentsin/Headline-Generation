@@ -127,7 +127,7 @@ def get_corpus_from_mpid_list(mpid_list):
         body, headline = get_segment_words_from_api(mpid)
         if not body:
             continue
-        if not headline
+        if not headline:
             continue
         bodies.append(body)
         headlines.append(headline)
