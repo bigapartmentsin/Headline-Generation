@@ -164,7 +164,6 @@ def get_keywords_from_mpid_list(mpid_list):
 
         try:
             title_words = infos['data']['title']
-            content_words = infos['data']['content']
         except:
             print(infos)
             return
