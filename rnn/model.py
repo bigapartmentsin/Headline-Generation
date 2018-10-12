@@ -139,6 +139,7 @@ class HeadlineGenerator(object):
 
 if __name__ == '__main__':
     mpid_list = get_recent_mpid_list(24)
+    # mpid_list = [258791658, 258840098]
     train_w2v(mpid_list)
     hg = HeadlineGenerator(26)
     hg.train(mpid_list)

@@ -124,13 +124,43 @@ def get_corpus_from_mpid_list(mpid_list):
     headlines = []
 
     for mpid in mpid_list:
-        body, headline = get_segment_words_from_api(mpid)
-        if not body:
+        url = 'http://10.16.57.57:8887/rec/content/' \
+              'segmentation/v1?mpId={}'.format(mpid)
+        html = requests.get(url).text
+        infos = json.loads(html)
+
+        if infos['status'] == 0:
+            print('Invalid mpid: {}'.format(mpid))
             continue
-        if not headline:
+
+        try:
+            title_words = infos['data']['title']
+            content_words = infos['data']['content']
+        except:
+            print(infos)
             continue
-        bodies.append(body)
-        headlines.append(headline)
+
+        title = ' '.join([_['word'] for _ in title_words if
+                          _['posType'] != 'w' and _['posType'] != 'mq' and _['posType'] != 'x'])
+        content = ' '.join([_['word'] for _ in content_words if
+                            _['posType'] != 'w' and _['posType'] != 'mq' and _['posType'] != 'x'])
+        content = content.replace('\n', ' ')
+        content = content.replace('　', '')
+        p = re.compile(' +')
+        content = re.sub(p, ' ', content)
+        title = re.sub(p, ' ', title)
+        content = content.split(' ')
+        title = title.split(' ')
+        try:
+            content.remove('')
+        except:
+            pass
+        try:
+            title.remove('')
+        except:
+            pass
+        bodies.append(content)
+        headlines.append(title)
 
     return bodies, headlines
 
@@ -162,11 +192,15 @@ def get_keywords_from_mpid_list(mpid_list):
         html = requests.get(url).text
         infos = json.loads(html)
 
+        if infos['status'] == 0:
+            print('Invalid mpid: {}'.format(mpid))
+            continue
+
         try:
             title_words = infos['data']['title']
         except:
             print(infos)
-            return
+            continue
         title = [_['word'] for _ in title_words if
                             _['posType'] != 'w' and _['posType'] != 'mq' and _['posType'] != 'x']
 
