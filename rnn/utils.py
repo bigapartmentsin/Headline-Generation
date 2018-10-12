@@ -86,6 +86,11 @@ def get_segment_words_from_api(mpid):
     html = requests.get(url).text
     infos = json.loads(html)
 
+    if infos['status'] == 0:
+        print(mpid)
+        print(infos)
+        return
+
     try:
         title_words = infos['data']['title']
         content_words = infos['data']['content']
@@ -120,6 +125,10 @@ def get_corpus_from_mpid_list(mpid_list):
 
     for mpid in mpid_list:
         body, headline = get_segment_words_from_api(mpid)
+        if not body:
+            continue
+        if not headline
+            continue
         bodies.append(body)
         headlines.append(headline)
 
