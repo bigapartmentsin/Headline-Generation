@@ -38,8 +38,8 @@ class HeadlineGenerator(object):
         input = keras.layers.Input(shape=(self.maxlen,), dtype='int32')
         embedding = keras.layers.Embedding(input_dim=vocab_size, output_dim=self.vec_dim,
                                            weights=[self.embedding_weights])(input)
-        h = keras.layers.recurrent.LSTM(units=1024, return_sequences=True, dropout=0.5)(embedding)
-        h = keras.layers.recurrent.LSTM(units=1024, return_sequences=False, dropout=0.5)(h)
+        h = keras.layers.recurrent.GRU(units=1024, return_sequences=True, dropout=0.5)(embedding)
+        h = keras.layers.recurrent.GRU(units=1024, return_sequences=False, dropout=0.5)(h)
         h = keras.layers.Dense(vocab_size, activation='softmax')(h)
 
         return keras.Model(input, h)
