@@ -2,3 +2,4 @@
 
 - LexRank-MSC
 - RNN
+- Transformer
